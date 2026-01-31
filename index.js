@@ -15,6 +15,15 @@ app.get('/users', async (req, res) => {
   }
 });
 
+app.get('/supermarkets', async (req, res) => {
+  try {
+    const supermarkets = await prisma.supermarket.findMany();
+    res.json(supermarkets);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch supermarkets' });
+  }
+});
+
 app.post('/users', async (req, res) => {
   const { name, email } = req.body;
   try {
