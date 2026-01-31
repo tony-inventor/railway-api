@@ -1,22 +1,22 @@
 generator client {
-  provider = "prisma-client-js"
+  provider	= "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider	= "mysql"
+  url		= env("DATABASE_URL")
 }
 
 model PriceEntry {
-  id          Int      @id @default(autoincrement())
-  productId   Int
+  id		Int      @id @default(autoincrement())
+  productId   	Int
   supermarketId Int
-  price       Decimal  @db.Decimal(10, 2)
-  date        DateTime @default(now()) @db.Timestamp(0)
-  collectorId Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt @db.Timestamp(0)
-  isOnSale    Boolean
+  price       	Decimal  @db.Decimal(10, 2)
+  date        	DateTime @default(now()) @db.Timestamp(0)
+  collectorId 	Int
+  createdAt   	DateTime @default(now())
+  updatedAt   	DateTime @updatedAt @db.Timestamp(0)
+  isOnSale    	Boolean
 
   product     Product   @relation(fields: [productId], references: [id])
   supermarket Supermarket @relation(fields: [supermarketId], references: [id])
@@ -27,38 +27,38 @@ model PriceEntry {
 }
 
 model Product {
-  id          Int           @id @default(autoincrement())
-  name        String        @db.VarChar(255)
-  description String?       @db.Text
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt @db.Timestamp(0)
-  barcode     String        @db.VarChar(20)
-  entries     PriceEntry[]
+  id         	Int           	@id @default(autoincrement())
+  name        	String        	@db.VarChar(255)
+  description 	String?       	@db.Text
+  createdAt   	DateTime      	@default(now())
+  updatedAt   	DateTime      	@updatedAt @db.Timestamp(0)
+  barcode     	String        	@db.VarChar(20)
+  entries     	PriceEntry[]
 
   @@index([barcode])
 }
 
 model Supermarket {
-  id      Int         @id @default(autoincrement())
-  name    String      @db.VarChar(255)
-  location String?    @db.VarChar(255)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt @db.Timestamp(0)
-  entries  PriceEntry[]
+  id      	Int         	@id @default(autoincrement())
+  name    	String      	@db.VarChar(255)
+  location 	String?    	@db.VarChar(255)
+  createdAt 	DateTime  	@default(now())
+  updatedAt 	DateTime  	@updatedAt @db.Timestamp(0)
+  entries  	PriceEntry[]
 
   @@index([name])
 }
 
 model User {
-  id          Int        @id @default(autoincrement())
-  openId      String     @unique @db.VarChar(64)
-  name        String?    @db.Text
-  email       String?    @db.VarChar(320)
-  loginMethod String?    @db.VarChar(64)
-  role        UserRole   @default(user)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt @db.Timestamp(0)
-  lastSignedIn DateTime  @default(now()) @db.Timestamp(0)
+  id          	Int        	@id @default(autoincrement())
+  openId      	String     	@unique @db.VarChar(64)
+  name        	String?    	@db.Text
+  email       	String?    	@db.VarChar(320)
+  loginMethod 	String?    	@db.VarChar(64)
+  role        	UserRole   	@default(user)
+  createdAt   	DateTime   	@default(now())
+  updatedAt   	DateTime   	@updatedAt @db.Timestamp(0)
+  lastSignedIn 	DateTime  	@default(now()) @db.Timestamp(0)
 
   @@index([email])
   @@index([openId])
