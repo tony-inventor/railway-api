@@ -7,71 +7,73 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model PriceEntry {
-  id          Int        @id @default(autoincrement())
-  productId   Int
-  supermarketId Int
-  price       Decimal    @db.Decimal(10, 2)
-  date        DateTime   @default(now()) @db.Timestamptz(0)
-  collectorId Int
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt @db.Timestamptz(0)
-  isOnSale    Boolean
+enum UserRole {
+  user
+  admin
+}
 
-  product     Product    @relation(fields: [productId], references: [id])
-  supermarket Supermarket @relation(fields: [supermarketId], references: [id])
+model User {
+  id            String       @id @default(uuid()) @db.Uuid
+  openId        String       @unique @db.VarChar(64)
+  name          String?      @db.Text
+  email         String?      @unique @db.VarChar(320)
+  loginMethod   String?      @db.VarChar(64)
+  role          UserRole     @default(user)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt @db.Timestamptz(0)
+  lastSignedIn  DateTime     @default(now()) @db.Timestamptz(0)
+  
+  // Relacionamento com as coletas que este usuário fez
+  priceEntries  PriceEntry[]
 
-  @@index([productId])
-  @@index([supermarketId])
-  @@index([date])
+  @@index([email])
+  @@index([openId])
 }
 
 model Product {
-  id          Int         @id @default(autoincrement())
-  name        String      @db.VarChar(255)
-  description String?     @db.Text
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt @db.Timestamptz(0)
-  barcode     String      @db.VarChar(20)
+  id          String       @id @default(uuid()) @db.Uuid
+  barcode     String       @unique @db.VarChar(20)
+  name        String       @db.VarChar(255)
+  description String?      @db.Text
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt @db.Timestamptz(0)
+  
   entries     PriceEntry[]
 
   @@index([barcode])
 }
 
 model Supermarket {
-  id        Int         @id @default(autoincrement())
-  name      String      @db.VarChar(255)
-  location  String?     @db.VarChar(255)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt @db.Timestamptz(0)
+  id        String       @id @default(uuid()) @db.Uuid
+  name      String       @db.VarChar(255)
+  location  String?      @db.VarChar(255)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt @db.Timestamptz(0)
+  
   entries   PriceEntry[]
 
   @@index([name])
 }
 
-model User {
-  id           Int       @id @default(autoincrement())
-  openId       String    @unique @db.VarChar(64)
-  name         String?   @db.Text
-  email        String?   @db.VarChar(320)
-  loginMethod  String?   @db.VarChar(64)
-  role         UserRole  @default(user)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt @db.Timestamptz(0)
-  lastSignedIn DateTime  @default(now()) @db.Timestamptz(0)
+model PriceEntry {
+  // BigInt para suportar bilhões de registros de histórico
+  id            BigInt      @id @default(autoincrement())
+  price         Decimal     @db.Decimal(12, 2)
+  date          DateTime    @default(now()) @db.Timestamptz(0)
+  isOnSale      Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt @db.Timestamptz(0)
 
-  @@index([email])
-  @@index([openId])
-}
+  // Chaves Estrangeiras (UUIDs)
+  productId     String      @db.Uuid
+  supermarketId String      @db.Uuid
+  collectorId   String?     @db.Uuid // Nullable para LGPD (se o user deletar a conta)
 
-model UsersTable {
-  id    BigInt  @id @default(autoincrement()) // Removed @db.UnsignedBigInt (Postgres doesn't need it)
-  name  String  @db.VarChar(255)
-  age   Int
-  email String  @unique @db.VarChar(255)
-}
+  // Relações
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  supermarket Supermarket @relation(fields: [supermarketId], references: [id], onDelete: Cascade)
+  collector   User?       @relation(fields: [collectorId], references: [id], onDelete: SetNull)
 
-enum UserRole {
-  user
-  admin
+  @@index([productId, date(sort: Desc)])
+  @@index([supermarketId])
 }
